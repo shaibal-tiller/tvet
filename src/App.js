@@ -1,24 +1,27 @@
-import logo from './logo.svg';
+import { BrowserRouter } from 'react-router-dom';
 import './App.css';
+import Router from './Router/Router';
+import Header from './Components/Header';
+import Footer from './Components/Footer';
+import { useState } from 'react';
+import { AppContext } from './Context/GetContext';
 
 function App() {
+const [userData,setUserData] =useState()
+
+  const data = {userData,setUserData}
+
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AppContext.Provider value={data}>
+    <BrowserRouter>
+      <div className="App">
+        <Header />
+        <Router />
+        <Footer />
+      </div>
+    </BrowserRouter>
+    </AppContext.Provider>
   );
 }
 
