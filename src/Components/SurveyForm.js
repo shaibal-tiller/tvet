@@ -1,141 +1,234 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TextInputField from './TextInputField';
 import SelectInputField from './SelectInputField';
+import axios from 'axios';
+/* {
+  learner_id: '',
+  learner_mobile: '',
+  learner_full_name: '',
+  learner_sex: '',
+  learner_age: '',
+  learner_mother_name: '',
+  learner_father_name: '',
+  learner_spouse_name: '',
+  learner_education: '',
+  learner_marital_status: '',
+  learner_city_name: '',
+  learner_mobile_alternate: '',
+  learner_present_address: '',
+  learner_hotspot_name: '',
+  learner_ward: '',
 
+  training_category: '',
+  learner_category: '',
+  training_model: '',
+  training_course_name: '',
+  training_start: '',
+  training_end: '',
+  training_batch: '',
+  training_shift: '',
+  training_enrollment: '',
+  training_completion: '',
 
+  employment_status_graduate: '',
+  occupation_present: '',
+  employer_name: '',
+  employer_contact: '',
+  employer_address: '',
+  monthly_income: '',
+  incoming_family_member: '',
+  family_total_income: '',
+} */
 const SurveyFormPage = () => {
-    const [formData, setFormData] = useState({
-        fullName: '',
-        dateOfBirth: '',
-        contactNumber: '',
-        numberOfSiblings: '',
-        maritalStatus: '',
-        spouseName: '',
-        sex: '',
-    });
+  const [activeSection, setActiveSection] = useState(null);
+  const base_url = process.env.REACT_APP_BACKEND
+  const [formData, setFormData] = useState();
 
-    const handleChange = (name, value) => {
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            [name]: value,
-        }));
-    };
+  useEffect(() => {
+    axios.get(`${base_url}/data/info`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then(res => {
+       
+        setFormData(res.data);
+        setActiveSection('trainee')
+      })
+      .catch(e => {
+        console.log(e);
+      })
+  }, [])
+  const handleSectionClick = (sectionName) => {
+    setActiveSection(sectionName === activeSection ? null : sectionName);
+  };
 
-    const calculateAge = () => {
-        const currentDate = new Date();
-        const birthDate = new Date(formData.dateOfBirth);
+  const handleChange = (name, value) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
 
-        // Calculate the age based on the difference between the current date and the birth date
-        let age = currentDate.getFullYear() - birthDate.getFullYear();
-
-        // Adjust the age if the current month is before the birth month
-        if (
-            currentDate.getMonth() < birthDate.getMonth() ||
-            (currentDate.getMonth() === birthDate.getMonth() && currentDate.getDate() < birthDate.getDate())
-        ) {
-            age--;
-        }
-
-        return age;
-    };
-
-    const handleBDTChange = (e) => {
-        const bdtAmount = e.target.value;
-        const usdAmount = bdtAmount / 100; // Assuming 1 BDT = 0.01 USD
-
-        handleChange('salaryBDT', bdtAmount);
-        handleChange('salaryUSD', usdAmount.toFixed(2));
-    };
+  const renderAccordionSection = (sectionName, sectionTitle, sectionFields) => {
+    const isOpen = sectionName === activeSection;
 
     return (
-        <div className="p-4">
-            <TextInputField
-                title="Full Name"
-                value={formData.fullName}
-                onChange={(value) => handleChange('fullName', value)}
-                backgroundColor="gray-100"
-            />
-            <div className="mb-4">
-                <label className="block font-medium mb-1">Date of Birth</label>
-                <input
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) => handleChange('dateOfBirth', e.target.value)}
-                    className="border border-gray-300 p-2 rounded bg-gray-100"
-                />
-            </div>
-            <TextInputField
-                title="Contact Number"
-                value={formData.contactNumber}
-                onChange={(value) => handleChange('contactNumber', value)}
-                type="number"
-                backgroundColor="gray-100"
-            />
-            <TextInputField
-                title="Number of Siblings"
-                value={formData.numberOfSiblings}
-                onChange={(value) => handleChange('numberOfSiblings', value)}
-                type="number"
-                backgroundColor="gray-100"
-            />
-            <SelectInputField
-                title="Marital Status"
-                value={formData.maritalStatus}
-                onChange={(value) => handleChange('maritalStatus', value)}
-                options={['Single', 'Married']}
-                backgroundColor="gray-100"
-            />
-            {formData.maritalStatus === 'Married' && (
-                <TextInputField
-                    title="Spouse Name"
-                    value={formData.spouseName}
-                    onChange={(value) => handleChange('spouseName', value)}
-                    backgroundColor="gray-100"
-                />
-            )}
-            <SelectInputField
-                title="Sex"
-                value={formData.sex}
-                onChange={(value) => handleChange('sex', value)}
-                options={['Male', 'Female', 'Other']}
-                backgroundColor="gray-100"
-            />
-            <div className="mb-4">
-                <label className="block font-medium mb-1">Age</label>
-                <input
-                    type="text"
-                    value={calculateAge()}
-                    readOnly
-                    className="border border-gray-300 p-2 rounded bg-gray-100"
-                />
-            </div>
-            <div className="flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 7.5l.415-.207a.75.75 0 011.085.67V10.5m0 0h6m-6 0h-1.5m1.5 0v5.438c0 .354.161.697.473.865a3.751 3.751 0 005.452-2.553c.083-.409-.263-.75-.68-.75h-.745M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+      <div className={`border rounded mb-4 ${isOpen ? 'border-gray-400' : 'border-gray-200'}`}>
+        <div
+          className={`flex items-center border-b-[1px] border-[#46444498] justify-between p-4 cursor-pointer ${isOpen ? 'bg-gray-200' : 'bg-white'
+            }`}
+          onClick={() => handleSectionClick(sectionName)}
+        >
+          <h2 className="text-lg font-medium w-[80%] ">{sectionTitle}</h2>
+          <div>
+            {sectionName === 'trainee' && formData?.unreachable > 0 ? (<h2 className='w-full px-2 text-xs'>Attempts: {formData?.unreachable}</h2>) : <></>}
 
-                <TextInputField
-                    title="Salary (BDT)"
-                    value={formData.salaryBDT}
-                    onChange={handleBDTChange}
-                    type="number"
-                    backgroundColor="gray-100"
-                />
-            </div>
-            <div className="flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-
-                <TextInputField
-                    title="Salary (USD)"
-                    value={formData.salaryUSD}
-                    readOnly
-                    backgroundColor="gray-100"
-                />
-            </div>
+          </div>
+          {isOpen ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
+          )}
         </div>
+        {isOpen && (
+          <div className="p-4 bg-gray-200 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {sectionFields.map((field) => {
+              return !field.options ?
+                <TextInputField
+                  key={field.name}
+                  title={field.title}
+                  name={field.name}
+                  readOnly={field.readOnly}
+                  value={formData[field.name]}
+                  onChange={handleChange}
+                  full={field.full}
+                />
+                :
+                <SelectInputField
+                  key={field.name}
+                  title={field.title}
+                  options={field.options}
+                  name={field.name}
+                  value={formData[field.name]}
+                  onChange={handleChange}
+                />
+
+            })}
+          </div>
+        )}
+      </div>
     );
+  };
+
+  const handleSubmit = () => {
+    axios.post(`${base_url}/data/submit`, formData, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then(() => {
+        // Clear form data and refresh the page
+        setFormData(null);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  const handleUnreachable = () => {
+    axios.post(`${base_url}/data/unreachable`, { cont: 1 })
+      .then(() => {
+        // Clear form data and refresh the page
+        setFormData(null);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  return (
+    <div className="p-4 pb-16 no-scrollbar">
+      {renderAccordionSection('trainee', 'Trainee Info', [
+        { title: 'Training ID', name: 'training_id', readOnly: true },
+        { title: 'Full Name', name: 'name', readOnly: true },
+        { title: 'Mobile No.', name: 'mobile_no', type: 'number' },
+        { title: 'Alternate Mobile No.', name: 'alt_mobile_no', type: 'number' },
+        { title: 'Gender', name: 'gender', readOnly: true },
+        { title: 'Age', name: 'age', readOnly: true },
+        { title: "Father's Name", name: 'father_name', readOnly: true },
+        { title: "Mother's Name", name: 'mother_name', readOnly: true },
+        { title: 'Marital Status', name: 'marital_status', options: ['Abandoned', 'Married', 'Unmarried', 'Divoreced', 'Separated', 'Widowed'] },
+        { title: "Spouse's Name", name: 'spouse_name' },
+        { title: 'Education', name: 'education' },
+        { title: 'City', name: 'city', readOnly: true },
+        { title: 'Word No.', name: 'ward_no', readOnly: true },
+
+        { title: 'Hotspot Name', name: 'hotspots', readOnly: true },
+        { title: 'Present Address', name: 'p_address', full: true },
+
+      ])}
+      {renderAccordionSection('training', 'Training Info', [
+        { title: 'Category of Training', name: 'training_catego', readOnly: true },
+        { title: 'Category of Learner', name: 'learners_category', readOnly: true },
+        { title: 'Models of Training', name: 'training_model', readOnly: true },
+        { title: 'Course Name', name: 'course_name', readOnly: true },
+        { title: 'Batch No.', name: 'batch_no', readOnly: true },
+        { title: 'Shift of Training', name: 'shift', readOnly: true },
+        { title: 'Enrollment Status', name: 'enrolled', readOnly: true },
+        { title: 'Course Completion', name: 'course_completion', readOnly: true },
+        { title: 'Training Starting Date', name: 'course_start', readOnly: true },
+        { title: 'Training Ending Date', name: 'course_end', readOnly: true },
+
+
+
+
+      ])}
+      {renderAccordionSection('earning', 'Earning Info', [
+        { title: 'Employment Status', name: 'current_emp_status', options: ['Unemployed', 'Self-employed', 'Outsourced', 'Wage job'] },
+        { title: 'Present Occupation', name: 'current_occupatio', },
+        { title: 'Employer/Business Info', name: 'employer_info', full: true },
+        { title: 'Monthly Income(BDT)', name: 'current_monthly_income_bdt' },
+        { title: 'No. of Earning Family Member', name: 'family_earning_member',options:[0,1,2,3,4,5,6,7,8,9,10] },
+        { title: 'Monthly Family Income(BDT)', name: 'current_family_monthly_income_bdt' },
+
+      ])}
+      <div className="flex justify-center mt-8">
+        <button
+          className="px-4 py-2 mr-4 text-white bg-blue-500 rounded hover:bg-blue-600"
+          onClick={handleSubmit}
+        >
+          Submit
+        </button>
+        <button
+          className="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600"
+          onClick={handleUnreachable}
+        >
+          Unreachable
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default SurveyFormPage;

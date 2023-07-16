@@ -1,59 +1,101 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, } from 'react-router-dom';
-import { GetContext } from '../Context/GetContext';
-import SelectInputField from '../Components/SelectInputField';
+import TextInputField from '../Components/TextInputField';
+import jwtDecode from 'jwt-decode';
+import axios from 'axios';
 
 const DashboardPage = () => {
-  const [selectedArea, setSelectedArea] = useState('');
+  const [data, setData] = useState();
   const navigate = useNavigate();
-  const myContext = GetContext()
-  const userData = myContext.userData
-  const handleAreaChange = (e) => {
-    
-     setSelectedArea(e.target.value);
-  };
+  const userData = jwtDecode(localStorage.getItem('token'))
+const base_url = process.env.REACT_APP_BACKEND
+
+  useEffect(() => {
+    axios.get(`${base_url}/data/task`,{
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+    .then(res=>{
+      setData(res.data);
+    })
+    .catch(e=>{
+    console.error(e);
+    })
+  }, [])
 
   const handleSurveyClick = () => {
-    // Assuming the user ID is stored in userData.id
-
-    const areaId = 1//selectedArea; // You may need to adjust this based on your data structure
-
-    // Perform any necessary data handling or API calls here
-
-    // Navigate to the survey page
     navigate('/survey');
   };
 
   return (
-    <div className='pt-16 md:pt-24 h-full w-full pb-4 md:px-[5%]'>
-    <div className="p-4">
-        <h2 className="text-center mb-4">City: {userData.city}</h2>
-        <div className="mb-4">
-          <SelectInputField
-          
-            title="Select Area"
-            value={selectedArea}
-            onChange={handleAreaChange}
-            options={['Area 1', 'Area 2', 'Area 3', 'Area 4']}
+    <div className='pt-16 px-8 text-center md:pt-24 h-full w-full pb-4 md:px-[5%] '>
+      <div className="p-4  rounded-lg bg-gray-200  px-20 mt-8">
+   
+       {data && <div className=" text-start mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          <TextInputField
+            title="City"
+            name={'city'}
+            readOnly={true}
+            value={userData.district?.toUpperCase()}
             backgroundColor="gray-100"
           />
-        </div>
-        <div className="mb-4">
-          <label className="block font-medium mb-1">ID</label>
-          <input
-            type="text"
-            value={userData.id}
-            readOnly
-            className="border border-gray-300 p-2 rounded bg-gray-100"
+            <TextInputField
+            title="Target"
+            name={'target'}
+            readOnly={true}
+            value={data.target}
+            backgroundColor="gray-100"
           />
-        </div>
-        <button
+            <TextInputField
+            title="First Unreachable"
+            name={'firstUnreachable'}
+            readOnly={true}
+            value={data.firstUnreachable}
+            backgroundColor="gray-100"
+          />
+            <TextInputField
+            title="Second Unreachable"
+            name={'secondUnreachable'}
+            readOnly={true}
+            value={data.secondUnreachable}
+            backgroundColor="gray-100"
+          />
+            <TextInputField
+            title="Third Unreachable"
+            name={'thirdUnreachable'}
+            readOnly={true}
+            value={data.thirdUnreachable}
+            backgroundColor="gray-100"
+          />
+             <TextInputField
+            title="Total Survey"
+            name={'totalSurvey'}
+            readOnly={true}
+            value={data.totalSurvey}
+            backgroundColor="gray-100"
+          />
+
+
+        </div>}
+        <div className='flex gap-4 justify-center'>
+          <button
           onClick={handleSurveyClick}
-          disabled={!selectedArea}
           className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          Survey
+          Start Survey
         </button>
+        <button
+        
+          onClick={()=>{
+          navigate('/')
+          localStorage.removeItem('token')
+
+        }}
+          className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          Logout
+        </button>
+        </div>
+        
       </div>
     </div>
   );

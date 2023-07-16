@@ -15,7 +15,7 @@ const [userData,setUserData] =useState()
   return (
     <AppContext.Provider value={data}>
     <BrowserRouter>
-      <div className="App">
+      <div className="App ">
         <Header />
         <Router />
         <Footer />

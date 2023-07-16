@@ -3,6 +3,8 @@ import login_bg from '../Assets/images/login-bg.jpg'
 import { useNavigate } from 'react-router-dom';
 import { USER } from '../Assets/data';
 import { GetContext } from '../Context/GetContext';
+import jwt_decode from 'jwt-decode';
+import axios from 'axios';
 
 const LoginForm = () => {
   const [username, setUsername] = useState('');
@@ -11,7 +13,7 @@ const LoginForm = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate()
   const myContext = GetContext()
-
+  const base_url = process.env.REACT_APP_BACKEND
 
 
   useEffect(() => {
@@ -40,52 +42,42 @@ const LoginForm = () => {
     setRememberMe(e.target.checked);
   };
 
-  const verifyLogin = (user, pass) => {
-    let login = false
-    USER.map(el => {
-      if (el.user === user) {
-        if (el.password === pass) {
-          login = el
-        }
-      }
-    })
-    return login
 
-  }
 
 
   const handleLogin = (e) => {
     e.preventDefault();
-
-    // Perform your login logic here, e.g., making an API call
 
     if (username === '') {
       setError('Username cannot be empty');
     } else if (password === '') {
       setError('Password cannot be empty');
     } else {
-      // Successful login, navigate to the dashboard
-      // You can use React Router or any other navigation library here
-      const user = verifyLogin(username, password)
-      if (user) {
-        myContext.setUserData(user)
-        user.role === 'user' ? navigate('/dashboard') : navigate('/admin')
+      console.log(`${base_url}/auth/login`);
+      axios.post(`${base_url}/auth/login`, { 'email': username, 'password': password })
+        .then((response) => {
+          const { token } = response.data;
+          const user = jwt_decode(token);
+          if (user) {
 
-        if (rememberMe) {
-          localStorage.setItem('loginUsername', username);
-          localStorage.setItem('loginPassword', password);
-          localStorage.setItem('rememberMe', rememberMe);
-        } else {
-          localStorage.removeItem('loginUsername');
-          localStorage.removeItem('loginPassword');
-          localStorage.removeItem('rememberMe');
-        }
+            myContext.setUserData(user)
+            user.userRole === 'Surveyor' ? navigate('/dashboard') : user.userRole === 'Admin' ? navigate('/admin') : console.log("no user, no way");
+            if (rememberMe) {
+              localStorage.setItem('token', token);
+              localStorage.setItem('rememberMe', rememberMe);
+            } else {
+          
+              localStorage.setItem('token', token);
+              localStorage.removeItem('rememberMe');
+            }
+          }
 
+        })
+        .catch((error) => {
+          console.log(error);
+          setError("Wrong Credential !!")
+        });
 
-      }
-      else {
-        setError('Invalid username or password');
-      }
     }
 
   };
