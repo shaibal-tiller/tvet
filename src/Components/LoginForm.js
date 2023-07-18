@@ -12,9 +12,7 @@ const LoginForm = () => {
   const [error, setError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate()
-  const myContext = GetContext()
   const base_url = process.env.REACT_APP_BACKEND
-
 
   useEffect(() => {
     const storedUsername = localStorage.getItem('loginUsername');
@@ -28,8 +26,6 @@ const LoginForm = () => {
     }
   }, []);
 
-
-
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
   };
@@ -42,9 +38,6 @@ const LoginForm = () => {
     setRememberMe(e.target.checked);
   };
 
-
-
-
   const handleLogin = (e) => {
     e.preventDefault();
 
@@ -53,43 +46,46 @@ const LoginForm = () => {
     } else if (password === '') {
       setError('Password cannot be empty');
     } else {
-      console.log(`${base_url}/auth/login`);
-      axios.post(`${base_url}/auth/login`, { 'email': username, 'password': password })
+      axios
+        .post(`${base_url}/auth/login`, { email: username, password: password })
         .then((response) => {
           const { token } = response.data;
           const user = jwt_decode(token);
           if (user) {
-
-            myContext.setUserData(user)
-            user.userRole === 'Surveyor' ? navigate('/dashboard') : user.userRole === 'Admin' ? navigate('/admin') : console.log("no user, no way");
+            user.userRole === 'Surveyor'
+              ? navigate('/dashboard')
+              : user.userRole === 'Admin'
+              ? navigate('/admin')
+              : navigate('/');
             if (rememberMe) {
               localStorage.setItem('token', token);
               localStorage.setItem('rememberMe', rememberMe);
             } else {
-          
               localStorage.setItem('token', token);
               localStorage.removeItem('rememberMe');
             }
           }
-
         })
         .catch((error) => {
-          console.log(error);
-          setError("Wrong Credential !!")
+          console.error(error);
+          setError('Wrong Credential !!');
         });
-
     }
-
   };
 
   return (
-    <div className="flex flex-col h-screen" style={{ backgroundImage: `url(${login_bg})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover' }}>
-
-
+    <div
+      className="flex flex-col h-screen"
+      style={{
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${login_bg})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+      }}
+    >
       <main className="mx-auto my-auto w-[60%] md:w-[40%]  max-w-md">
         <div className="w-full ">
           <form className="bg-gray-900 bg-opacity-60 rounded-md shadow-3xl shadow-xl shadow-[#696464ad]  px-8 pt-6 pb-8 ">
-            <div className="mb-4">
+          <div className="mb-4">
               <label className="block text-white text-sm font-bold mb-2" htmlFor="username">
                 Username
               </label>
@@ -145,8 +141,6 @@ const LoginForm = () => {
           </form>
         </div>
       </main>
-
-
     </div>
   );
 };

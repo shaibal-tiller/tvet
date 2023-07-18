@@ -4,8 +4,9 @@ import SelectInputField from './SelectInputField';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { EDUCATION } from '../Assets/data'
+import { GetContext } from '../Context/GetContext';
 
-const SurveyFormPage = () => {
+const SurveyFormPage_2 = () => {
   const [activeSection, setActiveSection] = useState(null);
   const base_url = process.env.REACT_APP_BACKEND
   const [formData, setFormData] = useState();
@@ -13,20 +14,13 @@ const SurveyFormPage = () => {
   const [modalOpen, setModalOpen] = useState(false); // State for modal visibility
   const [modalContent, setModalContent] = useState({}); // State for modal content
   const navigate = useNavigate()
+  const myContext = GetContext()
 
   useEffect(() => {
-    axios.get(`${base_url}/data/info`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-    })
-      .then(res => {
-
-        setFormData(res.data);
-        setActiveSection('trainee')
-      })
-      .catch(e => {
-        console.error(e);
-      })
+    setFormData(myContext.userData)
+    setActiveSection('trainee')
   }, [])
+
   const handleSectionClick = (sectionName) => {
     setActiveSection(sectionName === activeSection ? null : sectionName);
   };
@@ -140,7 +134,8 @@ const SurveyFormPage = () => {
         console.error(error);
       });
   };
- 
+  
+
   
   const handleModalExit = () => {
     setModalOpen(false);
@@ -149,9 +144,10 @@ const SurveyFormPage = () => {
 
   const handleModalResurvey = () => {
     setModalOpen(false);
-    window.location.reload();
+    navigate('/survey')
   };
   return (
+    <div  className='pt-16 md:pt-24 h-full w-full pb-4 md:px-[5%]'>
     <div className="p-4 pb-16 no-scrollbar">
       {renderAccordionSection('trainee', 'Trainee Info', [
         { title: 'Training ID', name: 'training_id', readOnly: true },
@@ -241,8 +237,8 @@ const SurveyFormPage = () => {
           </div>
         </div>
       )}
-    </div>
+    </div></div>
   );
 };
 
-export default SurveyFormPage;
+export default SurveyFormPage_2;

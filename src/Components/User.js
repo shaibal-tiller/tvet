@@ -1,8 +1,8 @@
-import jwtDecode from 'jwt-decode'
+import jwt_decode from 'jwt-decode'
 import React from 'react'
 
 const User = () => {
-    const userData= jwtDecode(localStorage.getItem('token'))
+    const userData= jwt_decode(localStorage.getItem('token'))
 
     return (
         <div className='absolute right-4 top-0'>
